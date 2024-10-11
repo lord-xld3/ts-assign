@@ -12,13 +12,13 @@ uhh what's it called again? Where are the properties of this object?
 
 When we all start crossing the border between "JavaScript", and TypeScript, we come to this:
 
-![ts-ez](3.png)
+![ts-error](image-5.png)
 
-...when it works just fine in JavaScript...and I expect you have seen and understand this...
+A very common error that has been talked about plenty, but I will highlight some interesting points on this.
 
-**Static-ly, `div.a` doesn't exist until it is evaluated.**
+- After declaration, a type can never be changed.
 
-And the answer to this is usually "ugly, explicit type-casting", or **Object.assign**
+![alt text](image-6.png)
 
 ## The easy solution
 
