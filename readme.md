@@ -10,17 +10,15 @@ uhh what's it called again? Where are the properties of this object?
 
 ## **wtf?!!**  
 
-## **SO MUCH EMPHASIS!**  
-
 When we all start crossing the border between "JavaScript", and TypeScript, we come to this:
 
 ![ts-ez](3.png)
 
 ...when it works just fine in JavaScript...and I expect you have seen and understand this...
 
-**~Static-ly, `div.a` doesn't exist until it is evaluated.~**
+**Static-ly, `div.a` doesn't exist until it is evaluated.**
 
-blahblah stackoverflow explicit typecasting or Object.assign... that's partially how we got here.
+And the answer to this is usually "ugly, explicit type-casting", or **Object.assign**
 
 ## The easy solution
 
@@ -37,7 +35,8 @@ assign<T extends {}, U>(target: T, source: U & {[K in keyof T]: T[K]}): T & U;
 ```
 
 This *basically* says, "source can be itself, including *keys* of the target". And if we plug that in...
-![herewego](2.png)
+
+![fixed1](2.png) ![fixed2](image-4.png)
 
 **Boom.**
 
@@ -46,7 +45,7 @@ This *basically* says, "source can be itself, including *keys* of the target". A
 Sure, this works, but its not always accurate... yet. You just opened a can of worms in TypeScript, "implementations of JavaScript", and [ECMA-262](https://262.ecma-international.org/6.0/#sec-object.assign). Let's talk about some big implications of this:
 
 - We can see the props of the target object we're assigning multiple props to (as useful as it sounds).
-- **Holy smokes we just gave "JavaScript" the power to static-ly analyze the structure and data type of yet-to-be-evaluated objects using Object.assign(), by leveraging TypeScript's LSP.**
+- 
 
 Look at those code snippets again. *That's JS baby!*
 
@@ -116,14 +115,11 @@ And the structure you get out of this is ridiculous.
 This happens to work for other primitives.
 
 ```ts
-const a = 3.3;
-const b = 4.4;
+const a = Object.assign(3.3, {prop: "aprop"});
+const b = Object.assign(4.4, {prop: "bprop"});
 
-const x = Object.assign(a, {a: "aprop"});
-const y = Object.assign(b, {b: "bprop"});
-
-console.log(`a < b: ${a < b}`); // true, a < b
-console.log((a < b)? x.a : y.b); // print prop using the smaller value
+console.log(`a < b: ${a < b}`); // a < b: true
+console.log((a < b)? a.prop : b.prop); // "aprop"
 ```
 
 I guess if you really want to compare objects as primitive values... you psycho. Its safer now but still unexplored.
@@ -153,7 +149,7 @@ const task3 = () => {
         console.log(...Object.values(runQueue));
     } */
 }
-Object.assign(runQueue, [task1, task2, task3])() // Execute the function returned by Object.assign()
+Object.assign(runQueue, [task1, task2, task3])() // Execute the function returned by Object.assign()()
 ```
 
 ... and the worst problem is property access times on functions. [Avoid using props on functions.](https://gist.github.com/lord-xld3/2521a868e48d9a79270ef972054ed12b)
