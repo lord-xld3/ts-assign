@@ -264,9 +264,8 @@ interface ObjectConstructor {
      * @param target - Target object to return.
      * @param source - Source object to copy properties from.
      */
-    assign<T extends {}, U extends {}>(
-        target: T,
-        source: (U extends (boolean | string | number)? never: U | {[K in keyof T]: T[K]}),
+    assign<T extends {}, U extends {}>(target: T,
+        source: (U extends (boolean | string | number)? never: U | {[K in keyof T]: T[K]})
     ): T & (U extends object? {[K in keyof U]: U[K]}: never);
 
     /** 
@@ -275,12 +274,10 @@ interface ObjectConstructor {
      * @param source1 - First source object to copy properties from.
      * @param source2 - Second source object to copy properties from.
      */
-    assign<T extends {}, U extends {}, V extends {}>(
-        target: T,
+    assign<T extends {}, U extends {}, V extends {}>(target: T,
         source1: (U extends (boolean | string | number)? never: U | {[K in keyof T]: T[K]}),
-        source2: (V extends (boolean | string | number)? never: V | {[K in keyof T]: T[K]}),
-    ): T & 
-    (U extends object? {[K in keyof U]: U[K]}: never) & 
+        source2: (V extends (boolean | string | number)? never: V | {[K in keyof T]: T[K]})
+    ): T & (U extends object? {[K in keyof U]: U[K]}: never) & 
     (V extends object? {[K in keyof V]: V[K]}: never);
 
     /** 
@@ -290,13 +287,11 @@ interface ObjectConstructor {
      * @param source2 - Second source object to copy properties from.
      * @param source3 - Third source object to copy properties from.
      */
-    assign<T extends {}, U extends {}, V extends {}, W extends {}>(
-        target: T,
+    assign<T extends {}, U extends {}, V extends {}, W extends {}>(target: T,
         source1: (U extends (boolean | string | number)? never: U | {[K in keyof T]: T[K]}),
         source2: (V extends (boolean | string | number)? never: V | {[K in keyof T]: T[K]}),
-        source3: (W extends (boolean | string | number)? never: W | {[K in keyof T]: T[K]}),
-    ): T & 
-    (U extends object? {[K in keyof U]: U[K]}: never) & 
+        source3: (W extends (boolean | string | number)? never: W | {[K in keyof T]: T[K]})
+    ): T & (U extends object? {[K in keyof U]: U[K]}: never) & 
     (V extends object? {[K in keyof V]: V[K]}: never) &
     (W extends object? {[K in keyof W]: W[K]}: never);
 

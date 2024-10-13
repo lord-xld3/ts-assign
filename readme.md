@@ -1,5 +1,12 @@
 # ES6 Object.assign()
 
+- [Problem](#problem)
+- [Easy Solution](#the-easy-solution)
+- [Powerful Solution](#a-powerful-solution)
+- [Going Deeper](#going-deeper)
+
+## Problem
+
 The following is a *dense*, but **powerful** observation of a really neat tool. It all started with this:
 
 ![zero](0.png)
@@ -8,21 +15,11 @@ uhh what's it called again? Where are the properties of this object?
 
 ![wtf](1.png)
 
-## **wtf?!!**  
-
-When we all start crossing the border between "JavaScript", and TypeScript, we come to this:
-
-![ts-error](image-5.png)
-
-A very common error that has been talked about plenty, but I will highlight some interesting points on this.
-
-- After declaration, a type can never be changed.
-
-![alt text](image-6.png)
+**wtf?**... When using a method called "**Object.assign**", and expecting it to "assign multiple properties to an object", **why can't I see the existing properties of the object I'm assigning to???**
 
 ## The easy solution
 
-**The definition under TypeScript/src/lib/es2015.core.d.ts**
+The definition under TypeScript/src/lib/es2015.core.d.ts:
 
 ```ts
 assign<T extends {}, U>(target: T, source: U): T & U;
@@ -45,24 +42,35 @@ This *basically* says, "source can be itself, including *keys* of the target". A
 Sure, this works, but its not always accurate... yet. You just opened a can of worms in TypeScript, "implementations of JavaScript", and [ECMA-262](https://262.ecma-international.org/6.0/#sec-object.assign). Let's talk about some big implications of this:
 
 - We can see the props of the target object we're assigning multiple props to (as useful as it sounds).
-- 
+- If we use it in a **declaration**, we can see the static structure of the returned object, even in JS with VSCode.
+
+![jsexample](image-8.png)
 
 Look at those code snippets again. *That's JS baby!*
 
+This also helps in TypeScript, with its convenient non-null assertion `!`. In TS, we can avoid explicit casting when mutating an object, because `Object.assign` returns the correct type. Thus, instead of:
+
+![alt text](image-5.png)
+
+We can do this:
+
+![alt text](image-10.png)
+
+With the **kink** being, `Object.assign` must be part of a declaration for it to be statically evaluated. The following is valid, but not in TypeScript:
+
+![alt text](image-11.png)
+
 ## A powerful solution
 
-No more teasing, here's the best I've got:
+Here's the [best solution](/es2015.core.d.ts) I've found. Take your time here.
 
 ```ts
- assign<T extends {}, U extends {}>(
-        target: T,
-        source: (U extends (boolean | string | number)? never: U | {[K in keyof T]: T[K]}),
-    ): T & (U extends object? {[K in keyof U]: U[K]}: never)
+ assign<T extends {}, U extends {}>(target: T,
+    source: (U extends (boolean | string | number)? never: U | {[K in keyof T]: T[K]})
+): T & (U extends object? {[K in keyof U]: U[K]}: never);
 ```
 
-Take your time here, this one goes deep. Here we go:
-
-`Object.assign` always returns the target, so ignore its type. 
+`Object.assign` always returns the target, so ignore `T` for now.  
 
 ```ts
 ...U extends {}
@@ -74,7 +82,7 @@ From what I'm reading, `U extends object` would filter out the primitives but in
 (U extends (boolean | string | number)? never: U /* This is more accurate, assigning an object without properties like primitives would result in nothing being assigned. */
 ```
 
-
+Improved return signature to filter out functions and primitives:
 
 ```ts
 ): T & (U extends object? {[K in keyof U]: U[K]}: never) /* if U has props, return an intersection of those props. Also prevents intersections of source functions with the target. Only the target can be callable, and it can't be re-assigned with Object.assign(). */
@@ -83,18 +91,47 @@ From what I'm reading, `U extends object` would filter out the primitives but in
 Extending to more sources:
 
 ```ts
-assign<T extends {}, U extends {}, V extends {}>(
-        target: T,
-        source1: (U extends (boolean | string | number)? never: U | {[K in keyof T]: T[K]}),
-        source2: (V extends (boolean | string | number)? never: V | {[K in keyof T]: T[K]}),
-    ): T & (U extends object? {[K in keyof U]: U[K]}: never) & 
-    (V extends object? {[K in keyof V]: V[K]}: never)
+assign<T extends {}, U extends {}, V extends {}>(target: T,
+    source1: (U extends (boolean | string | number)? never: U | {[K in keyof T]: T[K]}),
+    source2: (V extends (boolean | string | number)? never: V | {[K in keyof T]: T[K]}),
+): T & (U extends object? {[K in keyof U]: U[K]}: never) & 
+(V extends object? {[K in keyof V]: V[K]}: never);
 ```
 
 Some details are best left to the [test suite](objectAssignPrimitives.ts), but to sum it up:
 
-- Prevents a few incorrect ways to use .assign
-- Allows for some grotesque, but type-safe primitive BS
+- We made `Object.assign` more useful in ways its most likely to be used.
+- By improving the type signature, it behaves much closer to reality. It prevents a couple issues like:
+    1. Attempting to call an anonymous function assigned to an object.
+
+    ```ts
+    const F = Object.assign({}, funcA)
+    F("s") // Expect fatal error: 'not callable'
+    ```
+
+    2. Attempting to assign "primitives" to an object.
+
+    ```ts
+    const A = Object.assign(obj1, true); // nothing is assigned!
+    ```
+
+- Improving the type signature has a side effect of making the types more accurate. Most of these are weird edge cases, but this is part of what makes `Object.assign()` different from `return {...obj1, ...obj2}`.
+
+    1. Assigning properties from a function to an object copies the expected properties from a function.
+
+    ```ts
+    function a(){}; // Yes, this is valid.
+    a.prop = "value"; // No, you shouldn't do this.
+    const b = Object.assign({}, a); // b = {prop: "value"}
+    ```
+
+    2. "Primitive objects", unique to Object.assign.
+
+    ```ts
+    let a = Object.assign(3, {prop: "val"});
+    // (a == 3) -> true
+    // (a === 3) -> false
+    ```
 
 ## Going Deeper
 
@@ -102,15 +139,15 @@ Below, you will see some truly awful code.
 
 ### So you're not really supposed to do this...
 
-![chaosbegins](image.png)
+![chaos1](image.png)
 
 But it turns out you can.
 
-![chaos2](image-1.png)
+![chaos2](image-7.png)
 
 And the structure you get out of this is ridiculous.
 
-![alt text](image-2.png)
+![chaos3](image-2.png)
 
 This happens to work for other primitives.
 
@@ -124,7 +161,7 @@ console.log((a < b)? a.prop : b.prop); // "aprop"
 
 I guess if you really want to compare objects as primitive values... you psycho. Its safer now but still unexplored.
 
-Functions can have properties, so I came up with this insane example. We first define a function that iterates and executes its own values, then we assign some functions as values and execute it after assignment.
+Finally, I leave you with a "work of art". We first define a function that iterates and executes its own values, then we assign some functions as values and execute it after assignment. If that makes no sense, read it again, its very abstract.
 
 ```ts
 const runQueue = () => {
@@ -152,13 +189,11 @@ const task3 = () => {
 Object.assign(runQueue, [task1, task2, task3])() // Execute the function returned by Object.assign()()
 ```
 
-... and the worst problem is property access times on functions. [Avoid using props on functions.](https://gist.github.com/lord-xld3/2521a868e48d9a79270ef972054ed12b)
-
-There's more we can show like `Object.assign` correctly copying properties to/from functions including mixed object sources, but again **you should not assign props to a function.**
+**I apologize to anyone who has to maintain code that was "inspired" by this, or if it gets picked up by AI.**
 
 ## Links
 
 - [ECMA-262](https://262.ecma-international.org/6.0/#sec-object.assign)
 - [Test Suite](/objectAssignPrimitives.ts)
 - [Revised es2015.core.d.ts](/es2015.core.d.ts)
-- [Avoid using props on functions](https://gist.github.com/lord-xld3/2521a868e48d9a79270ef972054ed12b)
+- [Performance of properties on functions](https://gist.github.com/lord-xld3/2521a868e48d9a79270ef972054ed12b)
