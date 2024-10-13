@@ -9,11 +9,11 @@
 
 The following is a *dense*, but **powerful** observation of a really neat tool. It all started with this:
 
-![zero](0.png)
+![zero](img/0.png)
 
 uhh what's it called again? Where are the properties of this object?
 
-![wtf](1.png)
+![wtf](img/1.png)
 
 **wtf?**... When using a method called "**Object.assign**", and expecting it to "assign multiple properties to an object", **why can't I see the existing properties of the object I'm assigning to???**
 
@@ -33,32 +33,32 @@ assign<T extends {}, U>(target: T, source: U & {[K in keyof T]: T[K]}): T & U;
 
 This *basically* says, "source can be itself, including *keys* of the target". And if we plug that in...
 
-![fixed1](2.png) ![fixed2](image-4.png)
+![fixed1](img/2.png) ![fixed2](img/image-4.png)
 
 **Boom.**
 
 ## Not that simple
 
-Sure, this works, but its not always accurate... yet. You just opened a can of worms in TypeScript, "implementations of JavaScript", and [ECMA-262](https://262.ecma-international.org/6.0/#sec-object.assign). Let's talk about some big implications of this:
+Sure, this works, but its not always accurate... yet. You just opened a can of worms in TypeScript, "implementations of JavaScript", and [ECMA-262](img/https://262.ecma-international.org/6.0/#sec-object.assign). Let's talk about some big implications of this:
 
 - We can see the props of the target object we're assigning multiple props to (as useful as it sounds).
 - If we use it in a **declaration**, we can see the static structure of the returned object, even in JS with VSCode.
 
-![jsexample](image-8.png)
+![jsexample](img/image-8.png)
 
 Look at those code snippets again. *That's JS baby!*
 
 This also helps in TypeScript, with its convenient non-null assertion `!`. In TS, we can avoid explicit casting when mutating an object, because `Object.assign` returns the correct type. Thus, instead of:
 
-![alt text](image-5.png)
+![alt text](img/image-5.png)
 
 We can do this:
 
-![alt text](image-10.png)
+![alt text](img/image-10.png)
 
 With the **kink** being, `Object.assign` must be part of a declaration for it to be statically evaluated. The following is valid, but not in TypeScript:
 
-![alt text](image-11.png)
+![alt text](img/image-11.png)
 
 ## A powerful solution
 
@@ -98,7 +98,7 @@ assign<T extends {}, U extends {}, V extends {}>(target: T,
 (V extends object? {[K in keyof V]: V[K]}: never);
 ```
 
-Some details are best left to the [test suite](objectAssignPrimitives.ts), but to sum it up:
+Some details are best left to the [test suite](/objectAssignPrimitives.ts), but to sum it up:
 
 - We made `Object.assign` more useful in ways its most likely to be used.
 - By improving the type signature, it behaves much closer to reality. It prevents a couple issues like:
@@ -139,15 +139,15 @@ Below, you will see some truly awful code.
 
 ### So you're not really supposed to do this...
 
-![chaos1](image.png)
+![chaos1](img/image.png)
 
 But it turns out you can.
 
-![chaos2](image-7.png)
+![chaos2](img/image-7.png)
 
 And the structure you get out of this is ridiculous.
 
-![chaos3](image-2.png)
+![chaos3](img/image-2.png)
 
 This happens to work for other primitives.
 
