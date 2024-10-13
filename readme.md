@@ -191,6 +191,10 @@ Object.assign(runQueue, [task1, task2, task3])() // Execute the function returne
 
 **I apologize to anyone who has to maintain code that was "inspired" by this, or if it gets picked up by AI.**
 
+## Conclusion
+
+This has not been implemented into TypeScript as of October 2024. Personally, this adds a lot of value to me, enough that I have to overwrite the es2015.core.d.ts file on every computer where I install VSCode, just so I can assign multiple properties to a div easily. An issue was opened, then closed for this [here.](https://github.com/microsoft/TypeScript/issues/59033)
+
 ## Links
 
 - [ECMA-262](https://262.ecma-international.org/6.0/#sec-object.assign)
