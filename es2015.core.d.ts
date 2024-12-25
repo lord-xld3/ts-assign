@@ -259,14 +259,14 @@ interface NumberConstructor {
 }
 
 interface ObjectConstructor {
-    /** 
+     /** 
      * Copy enumerable own properties from source object to target object.
      * @param target - Target object to return.
      * @param source - Source object to copy properties from.
      */
     assign<T extends {}, U extends {}>(target: T,
-        source: (U extends (boolean | string | number)? never: U | {[K in keyof T]: T[K]})
-    ): T & (U extends object? {[K in keyof U]: U[K]}: never);
+        source: U extends (boolean | BigInt | Symbol | number)? never: U | {[K in keyof T]: T[K]}
+    ): T & (U extends string? [U] : U extends (object | [])? {[K in keyof U]: U[K]}: never);
 
     /** 
      * Copy enumerable own properties from multiple source objects to target object.
@@ -275,10 +275,10 @@ interface ObjectConstructor {
      * @param source2 - Second source object to copy properties from.
      */
     assign<T extends {}, U extends {}, V extends {}>(target: T,
-        source1: (U extends (boolean | string | number)? never: U | {[K in keyof T]: T[K]}),
-        source2: (V extends (boolean | string | number)? never: V | {[K in keyof T]: T[K]})
-    ): T & (U extends object? {[K in keyof U]: U[K]}: never) & 
-    (V extends object? {[K in keyof V]: V[K]}: never);
+        source1: U extends (boolean | BigInt | Symbol | number)? never: U | {[K in keyof T]: T[K]},
+        source2: V extends (boolean | BigInt | Symbol | number)? never: V | {[K in keyof T]: T[K]}
+    ): T & (U extends (object | [])? {[K in keyof U]: U[K]}: never) & 
+    (V extends (object | [])? {[K in keyof V]: V[K]}: never);
 
     /** 
      * Copy enumerable own properties from multiple source objects to target object.
@@ -288,13 +288,13 @@ interface ObjectConstructor {
      * @param source3 - Third source object to copy properties from.
      */
     assign<T extends {}, U extends {}, V extends {}, W extends {}>(target: T,
-        source1: (U extends (boolean | string | number)? never: U | {[K in keyof T]: T[K]}),
-        source2: (V extends (boolean | string | number)? never: V | {[K in keyof T]: T[K]}),
-        source3: (W extends (boolean | string | number)? never: W | {[K in keyof T]: T[K]})
-    ): T & (U extends object? {[K in keyof U]: U[K]}: never) & 
-    (V extends object? {[K in keyof V]: V[K]}: never) &
-    (W extends object? {[K in keyof W]: W[K]}: never);
-
+        source1: U extends (boolean | BigInt | Symbol | number)? never: U | {[K in keyof T]: T[K]},
+        source2: V extends (boolean | BigInt | Symbol | number)? never: V | {[K in keyof T]: T[K]},
+        source3: W extends (boolean | BigInt | Symbol | number)? never: W | {[K in keyof T]: T[K]}
+    ): T & (U extends (object | [])? {[K in keyof U]: U[K]}: never) & 
+    (V extends (object | [])? {[K in keyof V]: V[K]}: never) &
+    (W extends (object | [])? {[K in keyof W]: W[K]}: never);
+    
     /**
      * Returns an array of all symbol properties found directly on object o.
      * @param o Object to retrieve the symbols from.
